@@ -38,10 +38,10 @@ class DNS(base.BaseV30):
 
     def set(self, primary=None, secondary=None, suffix=None):
         if primary is not None:
-            self._set_dns('primary', primary)
+            return self._set_dns('primary', primary)
 
         if secondary is not None:
-            self._set_dns('secondary', secondary)
+            return self._set_dns('secondary', secondary)
 
         if suffix is not None:
-            self._set_suffix(suffix)
+            return self._set_suffix(suffix)
