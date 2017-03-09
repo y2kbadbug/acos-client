@@ -27,21 +27,21 @@ class Member(base.BaseV21):
                 "status": status
             })
         }
-        self._post(action, params, **kwargs)
+        return self._post(action, params, **kwargs)
 
     def create(self, service_group_name, server_name, server_port, status=1,
                **kwargs):
-        self._write("slb.service_group.member.create", service_group_name,
-                    server_name, server_port, status, **kwargs)
+        return self._write("slb.service_group.member.create", service_group_name,
+                           server_name, server_port, status, **kwargs)
 
     def update(self, service_group_name, server_name, server_port, status=1,
                **kwargs):
-        self._write("slb.service_group.member.update", service_group_name,
-                    server_name, server_port, status, **kwargs)
+        return self._write("slb.service_group.member.update", service_group_name,
+                           server_name, server_port, status, **kwargs)
 
     def delete(self, service_group_name, server_name, server_port, **kwargs):
-        self._write("slb.service_group.member.delete", service_group_name,
-                    server_name, int(server_port), **kwargs)
+        return self._write("slb.service_group.member.delete", service_group_name,
+                           server_name, int(server_port), **kwargs)
 
     def get_oper(self, service_group_name, server_name, server_port, **kwargs):
         sg_stats = self._post("slb.service_group.fetchStatistics",

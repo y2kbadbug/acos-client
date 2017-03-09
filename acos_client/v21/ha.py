@@ -31,4 +31,4 @@ class HA(base.BaseV21):
             }
         }
 
-        self._post('ha.sync_config', params)
+        return self._post('ha.sync_config', params)

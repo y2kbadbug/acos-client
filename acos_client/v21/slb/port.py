@@ -44,7 +44,7 @@ class Port(base.BaseV21):
                          **kwargs)
 
     def delete(self, name, port_num, protocol, **kwargs):
-        self._set("slb.server.port.delete", name, port_num, protocol, **kwargs)
+        return self._set("slb.server.port.delete", name, port_num, protocol, **kwargs)
 
     def all_delete(self, name, **kwargs):
-        self._get("slb.server.port.deleteAll",  {"name": name}, **kwargs)
+        return self._get("slb.server.port.deleteAll",  {"name": name}, **kwargs)

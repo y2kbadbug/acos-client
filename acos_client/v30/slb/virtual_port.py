@@ -143,22 +143,13 @@ class VirtualPort(base.BaseV30):
 
         exclu = ['template-persist-source-ip', 'template-persist-cookie']
 
-        try:
-            return self._set(virtual_server_name,
-                             name, protocol, port, service_group_name,
-                             s_pers_name, c_pers_name, status, True,
-                             autosnat=autosnat, ipinip=ipinip,
-                             exclude_minimize=exclu, no_dest_nat=no_dest_nat,
-                             pool=source_nat_pool,
-                             **kwargs)
-        except ae.AxapiJsonFormatError:
-            return self._set(virtual_server_name,
-                             name, protocol, port, service_group_name,
-                             s_pers_name, c_pers_name, status, True,
-                             autosnat=autosnat, ipinip=ipinip,
-                             exclude_minimize=[], no_dest_nat=no_dest_nat,
-                             pool=source_nat_pool,
-                             **kwargs)
+        return self._set(virtual_server_name,
+                         name, protocol, port, service_group_name,
+                         s_pers_name, c_pers_name, status, True,
+                         autosnat=autosnat, ipinip=ipinip,
+                         exclude_minimize=exclu, no_dest_nat=no_dest_nat,
+                         pool=source_nat_pool,
+                         **kwargs)
 
     def delete(self, virtual_server_name, name, protocol, port):
         url = self.url_server_tmpl.format(name=virtual_server_name)

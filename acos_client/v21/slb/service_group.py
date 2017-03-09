@@ -60,25 +60,25 @@ class ServiceGroup(base.BaseV21):
                 "health_monitor": hm_name
             })
         }
-        self._post(action, params, **kwargs)
+        return self._post(action, params, **kwargs)
 
     def create(self, name, protocol=TCP, lb_method=ROUND_ROBIN, **kwargs):
-        self._set("slb.service_group.create", name, protocol, lb_method,
-                  **kwargs)
+        return self._set("slb.service_group.create", name, protocol, lb_method,
+                         **kwargs)
 
     def update(self, name, protocol=None, lb_method=None, health_monitor=None,
                **kwargs):
-        self._set("slb.service_group.update", name, protocol, lb_method,
-                  health_monitor, **kwargs)
+        return self._set("slb.service_group.update", name, protocol, lb_method,
+                         health_monitor, **kwargs)
 
     def delete(self, name, **kwargs):
-        self._post("slb.service_group.delete", {'name': name}, **kwargs)
+        return self._post("slb.service_group.delete", {'name': name}, **kwargs)
 
     def all(self, **kwargs):
         return self._get('slb.service_group.getAll', **kwargs)
 
     def all_delete(self, **kwargs):
-        self._get('slb.service_group.deleteAll', **kwargs)
+        return self._get('slb.service_group.deleteAll', **kwargs)
 
     def stats(self, name, **kwargs):
         return self._post("slb.service_group.fetchStatistics",

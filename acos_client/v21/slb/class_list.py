@@ -52,4 +52,4 @@ class ClassList(base.BaseV21):
         return self._set("slb.class_list.update", class_list, **kwargs)
 
     def delete(self, name, **kwargs):
-        self._post("slb.class_list.delete", {"name": name}, **kwargs)
+        return self._post("slb.class_list.delete", {"name": name}, **kwargs)

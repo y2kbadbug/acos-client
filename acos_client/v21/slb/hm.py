@@ -64,21 +64,21 @@ class HealthMonitor(base.BaseV21):
             if n:
                 params[defs[mon_type]['protocol']]['port'] = n
         try:
-            self._post(action, params, **kwargs)
+            return self._post(action, params, **kwargs)
         except acos_errors.HMMissingHttpPassive:
             # Some version of AxAPI 2.1 require this arg
             params[defs[mon_type]['protocol']]['passive'] = 0
-            self._post(action, params, **kwargs)
+            return self._post(action, params, **kwargs)
 
     def create(self, name, mon_type, interval, timeout, max_retries,
                method=None, url=None, expect_code=None, port=None, **kwargs):
-        self._set("slb.hm.create", name, mon_type, interval, timeout,
-                  max_retries, method, url, expect_code, port, **kwargs)
+        return self._set("slb.hm.create", name, mon_type, interval, timeout,
+                         max_retries, method, url, expect_code, port, **kwargs)
 
     def update(self, name, mon_type, interval, timeout, max_retries,
                method=None, url=None, expect_code=None, port=None, **kwargs):
-        self._set("slb.hm.update", name, mon_type, interval, timeout,
-                  max_retries, method, url, expect_code, port, **kwargs)
+        return self._set("slb.hm.update", name, mon_type, interval, timeout,
+                         max_retries, method, url, expect_code, port, **kwargs)
 
     def delete(self, name, **kwargs):
-        self._post("slb.hm.delete", {"name": name}, **kwargs)
+        return self._post("slb.hm.delete", {"name": name}, **kwargs)

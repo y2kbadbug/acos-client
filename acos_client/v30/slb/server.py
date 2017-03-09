@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import acos_client.errors as acos_errors
 import acos_client.v30.base as base
 
 
@@ -32,14 +31,6 @@ class Server(base.BaseV30):
             }
         }
 
-        # Two creates in a row apparently works in ACOS 4.0; stop that
-        try:
-            self.get(name, **kwargs)
-        except acos_errors.NotFound:
-            pass
-        else:
-            raise acos_errors.Exists()
-
         return self._post(self.url_prefix, params, **kwargs)
 
     def update(self, name, ip_address, status=1, **kwargs):
@@ -50,9 +41,6 @@ class Server(base.BaseV30):
                 "action": 'enable' if status else 'disable',
             }
         }
-
-        self.get(name, **kwargs)
-
         return self._post(self.url_prefix + name, params, **kwargs)
 
     def delete(self, name):

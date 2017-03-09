@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import acos_client.errors as acos_errors
 import acos_client.v30.base as base
 
 
@@ -87,26 +86,18 @@ class HealthMonitor(base.BaseV30):
 
         if update:
             action += name
-        self._post(action, params, **kwargs)
+        return self._post(action, params, **kwargs)
 
     def create(self, name, mon_type, interval, timeout, max_retries,
                method=None, url=None, expect_code=None, port=None, **kwargs):
-        try:
-            self.get(name)
-        except acos_errors.NotFound:
-            pass
-        else:
-            raise acos_errors.Exists()
-
-        self._set(self.url_prefix, name, mon_type, interval, timeout,
-                  max_retries, method, url, expect_code, port, **kwargs)
+        return self._set(self.url_prefix, name, mon_type, interval, timeout,
+                         max_retries, method, url, expect_code, port, **kwargs)
 
     def update(self, name, mon_type, interval, timeout, max_retries,
                method=None, url=None, expect_code=None, port=None, **kwargs):
-        self.get(name)  # We want a NotFound if it does not exist
-        self._set(self.url_prefix, name, mon_type, interval, timeout,
-                  max_retries, method, url, expect_code, port, update=True,
-                  **kwargs)
+        return self._set(self.url_prefix, name, mon_type, interval, timeout,
+                         max_retries, method, url, expect_code, port, update=True,
+                         **kwargs)
 
     def delete(self, name):
-        self._delete(self.url_prefix + name)
+        return self._delete(self.url_prefix + name)

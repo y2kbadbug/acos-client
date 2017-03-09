@@ -30,7 +30,7 @@ class Server(base.BaseV21):
                 "status": kwargs.get('status', 1)
             }
         }
-        self._post("slb.server.create", params, **kwargs)
+        return self._post("slb.server.create", params, **kwargs)
 
     def update(self, name, ip_address, **kwargs):
         params = {
@@ -40,7 +40,7 @@ class Server(base.BaseV21):
                 "status": kwargs.get('status', 1)
             }
         }
-        self._post("slb.server.update", params, **kwargs)
+        return self._post("slb.server.update", params, **kwargs)
 
     def fetchStatistics(self, name, **kwargs):
         return self._post("slb.server.fetchStatistics", {"name": name},
@@ -53,7 +53,7 @@ class Server(base.BaseV21):
         return self._get('slb.server.getAll', **kwargs)
 
     def all_delete(self, **kwargs):
-        self._get('slb.server.deleteAll', **kwargs)
+        return self._get('slb.server.deleteAll', **kwargs)
 
     def stats(self, name, **kwargs):
         return self._post("slb.server.fetchStatistics",

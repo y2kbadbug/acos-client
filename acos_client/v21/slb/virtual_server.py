@@ -52,7 +52,7 @@ class VirtualServer(base.BaseV21):
                          vrid=vrid, **kwargs)
 
     def delete(self, name, **kwargs):
-        self._post("slb.virtual_server.delete", {"name": name}, **kwargs)
+        return self._post("slb.virtual_server.delete", {"name": name}, **kwargs)
 
     def stats(self, name, **kwargs):
         return self._post("slb.virtual_server.fetchStatistics", {"name": name},

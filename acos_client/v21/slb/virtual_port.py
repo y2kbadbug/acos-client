@@ -91,7 +91,7 @@ class VirtualPort(base.BaseV21):
         if source_nat and len(source_nat) > 0:
             params['vport']['source_nat'] = source_nat
 
-        self._post(action, params, **kwargs)
+        return self._post(action, params, **kwargs)
 
     def get(self, virtual_server_name, name, protocol, port, **kwargs):
         # There is no slb.virtual_server.vport.search.
@@ -110,11 +110,11 @@ class VirtualPort(base.BaseV21):
                ipinip=False,
                source_nat_pool=None,
                **kwargs):
-        self._set('slb.virtual_server.vport.create', virtual_server_name,
-                  name, protocol, port, service_group_name,
-                  s_pers_name, c_pers_name, status,
-                  autosnat=autosnat, ipinip=ipinip, source_nat=source_nat_pool,
-                  **kwargs)
+        return self._set('slb.virtual_server.vport.create', virtual_server_name,
+                         name, protocol, port, service_group_name,
+                         s_pers_name, c_pers_name, status,
+                         autosnat=autosnat, ipinip=ipinip, source_nat=source_nat_pool,
+                         **kwargs)
 
     def update(self, virtual_server_name, name, protocol, port,
                service_group_name,
@@ -123,11 +123,11 @@ class VirtualPort(base.BaseV21):
                ipinip=False,
                source_nat_pool=None,
                **kwargs):
-            self._set('slb.virtual_server.vport.update', virtual_server_name,
-                      name, protocol, port, service_group_name,
-                      s_pers_name, c_pers_name, status,
-                      autosnat=autosnat, ipinip=ipinip, source_nat=source_nat_pool,
-                      **kwargs)
+            return self._set('slb.virtual_server.vport.update', virtual_server_name,
+                             name, protocol, port, service_group_name,
+                             s_pers_name, c_pers_name, status,
+                             autosnat=autosnat, ipinip=ipinip, source_nat=source_nat_pool,
+                             **kwargs)
 
     def delete(self, virtual_server_name, name, protocol, port, **kwargs):
         params = {
@@ -138,4 +138,4 @@ class VirtualPort(base.BaseV21):
                 "port": int(port)
             }
         }
-        self._post("slb.virtual_server.vport.delete", params, **kwargs)
+        return self._post("slb.virtual_server.vport.delete", params, **kwargs)
