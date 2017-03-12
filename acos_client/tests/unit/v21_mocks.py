@@ -465,8 +465,7 @@ class MemberAssociateExists(MemberAssociate):
 class MemberCreate(Member):
     action = 'slb.service_group.member.create'
     params = {'member': {'status': 1, 'port': 80, 'server': 's1',
-              'fqdn-name': 's1', 'host': '1.1.1.1'},
-              'name': 'pool1'}
+              'host': '1.1.1.1'}, 'name': 'pool1'}
 
 
 class MemberCreateExists(MemberCreate):

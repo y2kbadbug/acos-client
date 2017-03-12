@@ -18,11 +18,10 @@ import acos_client.v21.base as base
 class Member(base.BaseV21):
 
     def _write(self, action, service_group_name, server_name, server_port,
-               status=None, fqdn=None, ip_address=None, **kwargs):
+               status=None, ip_address=None, **kwargs):
         params = {
             "name": service_group_name,
             "member": self.minimal_dict({
-                "fqdn-name": fqdn,
                 "host": ip_address,
                 "server": server_name,
                 "port": int(server_port),
@@ -40,7 +39,7 @@ class Member(base.BaseV21):
                status=1, **kwargs):
         return self._write("slb.service_group.member.create", service_group_name,
                            server_name, server_port, status,
-                           server_name, ip_address, **kwargs)
+                           ip_address, **kwargs)
 
     def update(self, service_group_name, server_name, server_port, status=1,
                **kwargs):

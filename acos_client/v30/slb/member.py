@@ -44,9 +44,8 @@ class Member(base.BaseV30):
                service_group_name,
                server_name,
                server_port,
-               fqdn_name=None,
-               ip_address=None,
                status=STATUS_ENABLE,
+               ip_address=None,
                update=False, **kwargs):
 
         url = self.url_base_tmpl.format(gname=service_group_name)
@@ -58,7 +57,6 @@ class Member(base.BaseV30):
 
         params = {
             "member": self.minimal_dict({
-                "fqdn-name": fqdn_name,
                 "host": ip_address,
                 "name": server_name,
                 "port": int(server_port),
@@ -87,9 +85,9 @@ class Member(base.BaseV30):
 
         return self._write(service_group_name,
                            server_name, server_port,
-                           server_name,
+                           status,
                            ip_address,
-                           status, **kwargs)
+                           **kwargs)
 
     def update(self,
                service_group_name,
