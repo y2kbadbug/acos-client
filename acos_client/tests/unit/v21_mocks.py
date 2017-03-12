@@ -451,9 +451,21 @@ class MemberDeleteNotFound(MemberDelete):
                 "msg": "Can not find the service group member"}}}
 
 
+class MemberAssociate(Member):
+    action = 'slb.service_group.member.associate'
+    params = {'member': {'status': 1, 'port': 80, 'server': 's1'},
+              'name': 'pool1'}
+
+
+class MemberAssociateExists(MemberAssociate):
+    response = {"response": {"status": "fail", "err": {"code": 1405,
+                "msg": "The service group member already exists."}}}
+
+
 class MemberCreate(Member):
     action = 'slb.service_group.member.create'
-    params = {'member': {'status': 1, 'port': 80, 'server': 's1'},
+    params = {'member': {'status': 1, 'port': 80, 'server': 's1',
+              'fqdn-name': 's1', 'host': '1.1.1.1'},
               'name': 'pool1'}
 
 

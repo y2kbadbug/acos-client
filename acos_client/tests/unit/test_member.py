@@ -29,14 +29,23 @@ class TestMember(unittest.TestCase):
         with mocks.MemberDeleteNotFound().client() as c:
             c.slb.service_group.member.delete('pool1', 's1', 80)
 
+    def test_member_associate(self):
+        with mocks.MemberAssociate().client() as c:
+            c.slb.service_group.member.associate('pool1', 's1', 80)
+
+    def test_member_associate_exists(self):
+        with mocks.MemberAssociateExists().client() as c:
+            with self.assertRaises(acos_errors.Exists):
+                c.slb.service_group.member.associate('pool1', 's1', 80)
+
     def test_member_create(self):
         with mocks.MemberCreate().client() as c:
-            c.slb.service_group.member.create('pool1', 's1', 80)
+            c.slb.service_group.member.create('pool1', 's1', '1.1.1.1', 80)
 
     def test_member_create_exists(self):
         with mocks.MemberCreateExists().client() as c:
             with self.assertRaises(acos_errors.Exists):
-                c.slb.service_group.member.create('pool1', 's1', 80)
+                c.slb.service_group.member.create('pool1', 's1', '1.1.1.1', 80)
 
     def test_member_update(self):
         with mocks.MemberUpdate().client() as c:

@@ -44,6 +44,8 @@ class Member(base.BaseV30):
                service_group_name,
                server_name,
                server_port,
+               fqdn_name=None,
+               ip_address=None,
                status=STATUS_ENABLE,
                update=False, **kwargs):
 
@@ -56,6 +58,8 @@ class Member(base.BaseV30):
 
         params = {
             "member": self.minimal_dict({
+                "fqdn-name": fqdn_name,
+                "host": ip_address,
                 "name": server_name,
                 "port": int(server_port),
                 # flip status code, becuase it's a disable flag in v30
@@ -65,20 +69,34 @@ class Member(base.BaseV30):
 
         return self._post(url, params, **kwargs)
 
+    def associate(self,
+                  service_group_name,
+                  server_name,
+                  server_port,
+                  status=STATUS_ENABLE, **kwargs):
+
+        return self._write(service_group_name,
+                           server_name, server_port, status, **kwargs)
+
     def create(self,
                service_group_name,
                server_name,
+               ip_address,
                server_port,
                status=STATUS_ENABLE, **kwargs):
 
         return self._write(service_group_name,
-                           server_name, server_port, status, **kwargs)
+                           server_name, server_port,
+                           server_name,
+                           ip_address,
+                           status, **kwargs)
 
     def update(self,
                service_group_name,
                server_name,
                server_port,
                status=STATUS_ENABLE, **kwargs):
+
         return self._write(service_group_name,
                            server_name, server_port, status, update=True, **kwargs)
 
