@@ -474,6 +474,11 @@ class MemberCreateExists(MemberCreate):
                 "msg": "The service group member already exists."}}}
 
 
+class MemberServerCreateExists(MemberCreate):
+    response = {"response": {"status": "fail", "err": {"code": 402653200,
+                "msg": " Name or IP address already exists."}}}
+
+
 class MemberUpdate(Member):
     action = 'slb.service_group.member.update'
     params = {'member': {'status': 0, 'port': 80, 'server': 's1'},

@@ -47,6 +47,11 @@ class TestMember(unittest.TestCase):
             with self.assertRaises(acos_errors.Exists):
                 c.slb.service_group.member.create('pool1', 's1', '1.1.1.1', 80)
 
+    def test_member_server_create_exists(self):
+        with mocks.MemberServerCreateExists().client() as c:
+            with self.assertRaises(acos_errors.Exists):
+                c.slb.service_group.member.create('pool1', 's1', '1.1.1.1', 80)
+
     def test_member_update(self):
         with mocks.MemberUpdate().client() as c:
             c.slb.service_group.member.update('pool1', 's1', 80,
