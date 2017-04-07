@@ -47,6 +47,10 @@ class Exists(ACOSException):
     pass
 
 
+class DoesNotExist(ACOSException):
+    pass
+
+
 class NotFound(ACOSException):
     pass
 

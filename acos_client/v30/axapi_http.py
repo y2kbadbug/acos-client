@@ -16,7 +16,6 @@
 # TODO(mdurrant) - Organize these imports
 import errno
 import json
-import logging
 import socket
 import sys
 import time
@@ -29,21 +28,12 @@ if sys.version_info >= (3, 0):
 else:
     # Python 2
     import httplib as http_client
-http_client.HTTPConnection.debuglevel = logging.INFO
 
 import responses as acos_responses
 
 import acos_client
-from acos_client import logutils
-
-LOG = logging.getLogger(__name__)
 
 import sys
-out_hdlr = logging.StreamHandler(sys.stdout)
-out_hdlr.setLevel(logging.DEBUG)
-LOG.addHandler(out_hdlr)
-
-LOG.setLevel(logging.DEBUG)
 
 
 broken_replies = {
@@ -75,9 +65,6 @@ class HttpClient(object):
 
     def request(self, method, api_url, params={}, headers=None,
                 file_name=None, file_content=None, axapi_args=None, **kwargs):
-        LOG.debug("axapi_http: full url = %s", self.url_base + api_url)
-        LOG.debug("axapi_http: %s url = %s", method, api_url)
-        LOG.debug("axapi_http: params = %s", json.dumps(logutils.clean(params), indent=4))
 
         # Update params with axapi_args for currently unsupported configuration of objects
         if axapi_args is not None:
@@ -97,13 +84,11 @@ class HttpClient(object):
         if params:
             params_copy = params.copy()
             # params_copy.update(extra_params)
-            LOG.debug("axapi_http: params_all = %s", logutils.clean(params_copy))
 
             payload = json.dumps(params_copy, encoding='utf-8')
         else:
             payload = None
 
-        LOG.debug("axapi_http: headers = %s", json.dumps(logutils.clean(hdrs), indent=4))
 
         if file_name is not None:
             files = {
@@ -136,11 +121,7 @@ class HttpClient(object):
                     continue
                 raise e
 
-        LOG.debug("acos_client retried %s %s times", self.url_base + api_url, i)
-
         if last_e is not None:
-            LOG.error("acos_client failing with error %s after %s retries ignoring %s",
-                      last_e, i, self.retry_err_strings)
             raise e
 
         if z.status_code == 204:
@@ -154,8 +135,6 @@ class HttpClient(object):
                 return {}
             else:
                 raise e
-
-        LOG.debug("axapi_http: data = %s", json.dumps(logutils.clean(r), indent=4))
 
         if 'response' in r and 'status' in r['response']:
             if r['response']['status'] == 'fail':
