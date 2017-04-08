@@ -96,9 +96,6 @@ RESPONSE_CODES = {
         }
     },
     1023460352: {
-        'DELETE': {
-            '*': None
-        },
         '*': {
             '*': ae.NotFound
         }

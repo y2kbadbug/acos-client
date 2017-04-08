@@ -27,7 +27,6 @@ RESPONSE_CODES = {
         '*': ae.InvalidSessionID
     },
     1023: {
-        'slb.service_group.member.delete': None,
         '*': ae.NotFound
     },
     1043: {
@@ -91,8 +90,8 @@ RESPONSE_CODES = {
         '*': ae.Exists
     },
     67305473: {
-        'slb.service_group.delete': None,
-        'slb.service_group.member.delete': None,
+        'slb.service_group.delete': ae.NotFound,
+        'slb.service_group.member.delete': ae.NotFound,
         'slb.service_group.member.create': ae.NotFound,
         'slb.service_group.member.update': ae.NotFound,
         '*': ae.NotFound
