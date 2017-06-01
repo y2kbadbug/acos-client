@@ -60,7 +60,7 @@ class ServiceGroup(base.BaseV30):
         hm_name = hm_name or None
 
         # v30 needs unit tests badly...
-
+        import pdb; pdb.set_trace()
         params = {
             "service-group": self.minimal_dict({
                 "name": name,
