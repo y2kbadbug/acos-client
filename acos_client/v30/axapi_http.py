@@ -113,12 +113,6 @@ class HttpClient(object):
 
                 break
             except (socket.error, requests.exceptions.ConnectionError) as e:
-                # Workaround some bogosity in the API
-                if e.errno in self.retry_errnos or \
-                   any(s in str(e) for s in self.retry_err_strings):
-                    time.sleep(0.1)
-                    last_e = e
-                    continue
                 raise e
 
         if last_e is not None:

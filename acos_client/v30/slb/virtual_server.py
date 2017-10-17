@@ -31,12 +31,12 @@ class VirtualServer(base.BaseV30):
         return self._get(self.url_prefix + name)
 
     def _set(self, name, ip_address=None, status='stats-data-enable',
-             update=False, arp_disable=None, vrid=None, **kwargs):
+             update=False, arp_disable=None, vrid=None,  **kwargs):
         params = {
             "virtual-server": self.minimal_dict({
                 "name": name,
                 "ip-address": ip_address,
-                "arp-disable": None if arp_disable is None else int(arp_disable)
+                "arp-disable": None if arp_disable is None else int(arp_disable),
             }),
         }
         if vrid:
