@@ -1,4 +1,4 @@
-# Copyright 2014-2016 A10 Networks.
+# Copyright 2014,  Doug Wiegley,  A10 Networks.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,23 +13,24 @@
 #    under the License.
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import six
 
-from acos_client.v30 import base
+try:
+    import unittest2 as unittest
+except ImportError:
+    import unittest
+
+import acos_client.tests.unit.v21_mocks as mocks
 
 
-class SLBCommon(base.BaseV30):
+class TestSystem(unittest.TestCase):
 
-    url_prefix = "/slb/common"
+    def test_information(self):
+        m = mocks.SystemInformation()
+        with m.client() as c:
+            r = c.system.information()
+            self.assertIn('system_information', r)
 
-    def _underscore_to_dash(self, val):
-        rv = val.replace("_", "-")
-        return rv
-
-    def create(self, **kwargs):
-        params = {"common": {}}
-        for k, v in six.iteritems(kwargs):
-            params["common"][self._underscore_to_dash(k)] = v
-        kwargs = {}
-
-        return self._post(self.url_prefix, params, **kwargs)
+    def test_write_memory(self):
+        m = mocks.SystemWriteMemory()
+        with m.client() as c:
+            c.system.action.write_memory()

@@ -1,3 +1,5 @@
+# vim: tabstop=4 shiftwidth=4 softtabstop=4
+
 # Copyright 2014,  Doug Wiegley,  A10 Networks.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -11,21 +13,21 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import errno
 import json
 import logging
-from requests.adapters import HTTPAdapter
-from requests import Session
 import six
+import socket
+import ssl
 import sys
+import time
 
 import acos_client
 from acos_client import logutils
 from acos_client.v21 import responses as acos_responses
-from acos_client.v21.ssl_adapter import SSLAdapter
 
 LOG = logging.getLogger(__name__)
 
@@ -33,6 +35,17 @@ out_hdlr = logging.StreamHandler(sys.stderr)
 out_hdlr.setLevel(logging.ERROR)
 LOG.addHandler(out_hdlr)
 LOG.setLevel(logging.ERROR)
+
+
+# Monkey patch for ssl connect, for specific TLS version required by
+# ACOS hardware.
+def force_tlsv1_connect(self):
+    sock = socket.create_connection((self.host, self.port), self.timeout)
+    if self._tunnel_host:
+        self.sock = sock
+        self._tunnel()
+    self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file,
+                                ssl_version=ssl.PROTOCOL_TLSv1)
 
 
 def extract_method(api_url):
@@ -87,27 +100,68 @@ broken_replies = {
 }
 
 
+class EmptyHttpResponse(Exception):
+    def __init__(self, response):
+        self.response = response
+
+
 class HttpClient(object):
     HEADERS = {
         "Content-type": "application/json",
         "User-Agent": "ACOS-Client-AGENT-%s" % acos_client.VERSION,
     }
 
-    def __init__(self, host, port=None, protocol="https", timeout=None,
+    headers = {}
+
+    def __init__(self, host, port=None, protocol="https", client=None, timeout=None,
                  retry_errno_list=None):
+        self.host = host
+        self.port = port
+        self.protocol = protocol
+        self.timeout = timeout
         if port is None:
             if protocol is 'http':
                 self.port = 80
             else:
                 self.port = 443
-        self.url_base = "%s://%s:%s" % (protocol, host, self.port)
+        self.retry_errnos = [errno.ECONNRESET, errno.ECONNREFUSED]
+        if retry_errno_list is not None:
+            self.retry_errnos += retry_errno_list
+
+    def _http(self, method, api_url, payload):
+        if self.protocol == 'https':
+            http = six.moves.http_client.HTTPSConnection(self.host, self.port, timeout=self.timeout)
+            http.connect = lambda: force_tlsv1_connect(http)
+        else:
+            http = six.moves.http_client.HTTPConnection(self.host, self.port, timeout=self.timeout)
+
+        LOG.debug("axapi_http: url:     %s", api_url)
+        LOG.debug("axapi_http: method:  %s", method)
+        LOG.debug("axapi_http: headers: %s", logutils.clean(self.HEADERS))
+        LOG.debug("axapi_http: payload: %s", logutils.clean(payload))
+
+        http.request(method, api_url, body=payload, headers=self.headers)
+
+        r = http.getresponse()
+        r_data = r.read()
+
+        # Workaround for zero length response
+        def handle_empty_response(data):
+            if not data:
+                raise EmptyHttpResponse(r)
+
+            return data
+
+        http.close()
+
+        return handle_empty_response(r_data)
 
     def request(self, method, api_url, params={}, **kwargs):
-        LOG.debug("axapi_http: full url = %s", self.url_base + api_url)
-        LOG.debug("axapi_http: %s url = %s", method, api_url)
-        LOG.debug("axapi_http: params = %s", json.dumps(logutils.clean(params), indent=4))
+        LOG.debug("axapi_http: url = %s", api_url)
+        LOG.debug("axapi_http: params = %s", logutils.clean(params))
 
-        # Set "data" variable for the request
+        self.headers = self.HEADERS
+
         if params:
             extra_params = kwargs.get('axapi_args', {})
             params_copy = merge_dicts(params, extra_params)
@@ -117,53 +171,68 @@ class HttpClient(object):
         else:
             try:
                 payload = kwargs.pop('payload', None)
-                self.headers = dict(self.HEADERS, **kwargs.pop('headers', {}))
+                self.headers = dict(self.headers, **kwargs.pop('headers', {}))
                 LOG.debug("axapi_http: headers_all = %s", logutils.clean(self.headers))
             except KeyError:
                 payload = None
 
-        # Create session to set HTTPAdapter or SSLAdapter and set max_retries
-        session = Session()
-        if self.port == 443:
-            # Add adapter for any https session to force TLS1_0 connection for v21 of AXAPI
-            session.mount('https://', SSLAdapter(max_retries=60))
-        else:
-            session.mount('http://', HTTPAdapter(max_retries=60))
-        session_request = getattr(session, method.lower())
+        last_e = None
 
-        # Make actual request and handle any errors
-        try:
-            device_response = session_request(
-                self.url_base + api_url, verify=False, data=payload, headers=self.HEADERS)
-        except (Exception) as e:
-            LOG.error("acos_client failing with error %s after 60 retries",
-                      e.__class__.__name__)
-            raise e
+        for i in six.moves.range(0, 600):
+            try:
+                last_e = None
+                data = self._http(method, api_url, payload)
+                break
+            except socket.error as e:
+                # Workaround some bogosity in the API
+                if e.errno in self.retry_errnos:
+                    time.sleep(0.1)
+                    last_e = e
+                    continue
+                raise e
+            except six.moves.http_client.BadStatusLine as e:
+                time.sleep(0.1)
+                last_e = e
+                continue
+            except EmptyHttpResponse as e:
+                if e.response.status != six.moves.http_client.OK:
+                    msg = dict(e.response.msg.items())
+                    data = json.dumps({"response": {'status': 'fail', 'err':
+                                      {'code': e.response.status,
+                                       'msg': msg}}})
+                else:
+                    data = json.dumps({"response": {"status": "OK"}})
+                break
 
-        # Log if the reponse is one of the known broken response
-        if device_response in broken_replies:
-            device_response = broken_replies[device_response]
+        if last_e is not None:
+            raise last_e
+
+        LOG.debug("axapi_http: data = %s", logutils.clean(data))
+
+        # Fixup some broken stuff in an earlier version of the axapi
+        # xmlok = ('<?xml version="1.0" encoding="utf-8" ?>'
+        #          '<response status="ok"></response>')
+        # if data == xmlok:
+        #     return {'response': {'status': 'OK'}}
+        # TODO()
+        if data in broken_replies:
+            data = broken_replies[data]
             LOG.debug("axapi_http: broken reply, new response: %s",
-                      logutils.clean(device_response))
+                      logutils.clean(data))
 
-        # Validate json response
         try:
-            json_response = device_response.json()
-            LOG.debug(
-                "axapi_http: data = %s", json.dumps(logutils.clean(json_response), indent=4)
-            )
+            r = json.loads(data)
         except ValueError as e:
-            # The response is not JSON but it still succeeded.
+            # Handle non json response
             LOG.debug("axapi_http: json = %s", e)
-            return device_response
+            return data
 
-        # Handle "fail" responses returned by AXAPI
-        if 'response' in json_response and 'status' in json_response['response']:
-            if json_response['response']['status'] == 'fail':
-                    acos_responses.raise_axapi_ex(json_response, action=extract_method(api_url))
+        if 'response' in r and 'status' in r['response']:
+            if r['response']['status'] == 'fail':
+                    acos_responses.raise_axapi_ex(
+                        r, action=extract_method(api_url))
 
-        # Return json portion of response
-        return json_response
+        return r
 
     def get(self, api_url, params={}, **kwargs):
         return self.request("GET", api_url, params, **kwargs)
