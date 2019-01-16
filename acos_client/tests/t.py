@@ -213,8 +213,13 @@ def run_all(ax, partition, pmap):
     print("=============================================================")
     print("")
     print("About to do a close with bad session id")
-    c.session.session_id = 'bad_session_id'
-    c.session.close()
+    try:
+        c.session.session_id = 'bad_session_id'
+        c.session.close()
+    except acos_client.errors.InvalidSessionID:
+        print("got invalid session error, good")
+    else:
+        raise Nope()
 
     # print("=============================================================")
     # print("")
